@@ -26,13 +26,16 @@ class RainbowRoad(PulseViz):
             **{index + 12: 0 for index in range(21)},
         }
 
+        self.scale = 360
+
         super().__init__(*args, **kwargs)
 
-    def loop(self):
-        values = super().loop()
-        self.rainbow_road(values)
+    def data_processing(self, *args, **kwargs):
+        self.raw_data = self.pulseviz_bands.values
 
-    def rainbow_road(self, values, scale=360):
+    def device_processing(self, device, device_instance):
+        values = self.raw_data
+
         movement = np.sum([
             self.data_conversion(value, values.min(), values.max()) * self.acceleration_weight[index]
             for index, value in enumerate(values)
@@ -41,44 +44,13 @@ class RainbowRoad(PulseViz):
         if movement > 0:
             self.rainbow_offset += movement
 
-        if self.rainbow_offset > scale:
-            self.rainbow_offset -= scale
+        if self.rainbow_offset > self.scale:
+            self.rainbow_offset -= self.scale
 
-        for device in self.devices:
-            if device['enabled']:
-                if device['type'] == 'wled':
-                    leds = device['leds']
-
-                    rainbow = [[
-                        int(color * 255) for color in colorsys.hsv_to_rgb(
-                            ((scale * index / leds) + self.rainbow_offset) / scale, 1, 1
-                        )
-                    ] for index in range(leds)
-                    ]
-
-                    threading.Thread(
-                        target=self.set_wled_strip,
-                        args=(),
-                        kwargs={
-                            'wled': device,
-                            'data': rainbow,
-                        },
-                    ).start()
-
-                if device['type'] == 'arduino':
-                    leds = device['leds']
-
-                    rainbow = [[
-                        int(color * 255) for color in colorsys.hsv_to_rgb(
-                            ((scale * index / leds) + self.rainbow_offset) / scale, 1, 1
-                        )
-                    ] for index in range(leds)
-                    ]
-
-                    threading.Thread(
-                        target=self.set_arduino_strip,
-                        args=(),
-                        kwargs={
-                            'data': rainbow,
-                        },
-                    ).start()
+        return [
+            [
+                int(color * 255) for color in colorsys.hsv_to_rgb(
+                    ((self.scale * index / device_instance.leds) + self.rainbow_offset) / self.scale, 1, 1
+                )
+            ] for index in range(device_instance.leds)
+        ]

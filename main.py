@@ -1,7 +1,3 @@
-import threading
-import colorsys
-import numpy as np
-
 from immersivefx import Core
 from .bands import Bands, calculate_octave_bands
 from .pacmd import list_sources
@@ -17,8 +13,7 @@ class PulseViz(Core):
         super().__init__(*args, **kwargs)
 
         bands_data = {
-            # 'source_name': self.get_source_name(),
-            'source_name': 'alsa_output.pci-0000_04_00.6.analog-stereo.monitor',
+            'source_name': self.get_source_name(),
             'sample_frequency': 44100,
             'sample_size': 8192,
             'window_size': 1024,
@@ -70,9 +65,6 @@ class PulseViz(Core):
 
     def stop_bands(self):
         self.pulseviz_bands.stop()
-
-    def data_loop(self, *args, **kwargs):
-        self.raw_data = self.pulseviz_bands.values
 
     @staticmethod
     def data_conversion(value, minimum, maximum):
