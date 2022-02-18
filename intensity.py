@@ -1,4 +1,3 @@
-import threading
 import numpy as np
 
 from .main import PulseViz
@@ -33,19 +32,14 @@ class Intensity(PulseViz):
         return [self.raw_data for _ in range(device_instance.leds)]
 
     def data_processing(self, *args, **kwargs):
-        values = self.pulseviz_bands.values
-
-        all_converted_values = np.array([
-            self.data_conversion(value, values.min(), values.max()) if not np.isinf(value) else 0
-            for value in values
-        ])
+        converted_values = self.converted_values
 
         calculated_color = np.array([
-            all_converted_values[:4].mean() * self.sub_bass_color * 0.5,
-            all_converted_values[4:8].mean() * self.kick_color,
-            all_converted_values[9:13].mean() * self.snare_color,
-            all_converted_values[13:-6].mean() * self.mid_color * 0.75,
-            all_converted_values[-6:].mean() * self.high_color * 0.75,
+            converted_values[:4].mean() * self.sub_bass_color * 0.5,
+            converted_values[4:8].mean() * self.kick_color,
+            converted_values[9:13].mean() * self.snare_color,
+            converted_values[13:-6].mean() * self.mid_color * 0.75,
+            converted_values[-6:].mean() * self.high_color * 0.75,
         ]).mean(axis=0)
 
         self.color_values = np.roll(self.color_values, -1, axis=0)

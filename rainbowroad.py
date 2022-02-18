@@ -10,37 +10,26 @@ class RainbowRoad(PulseViz):
 
     def __init__(self, *args, **kwargs):
         self.rainbow_offset = 0
-        self.acceleration_weight = {
-            0: 0.25,
-            1: 0.33,
-            2: 0.5,
-            3: 0.75,
-            4: 0.83,
-            5: 1,
-            6: 1,
-            7: 0.75,
-            8: 0.5,
-            9: 0.33,
-            10: 0.1,
-            11: 0.05,
-            **{index + 12: 0 for index in range(21)},
-        }
-
         self.scale = 360
+        self.raw_data = 0
 
         super().__init__(*args, **kwargs)
 
     def data_processing(self, *args, **kwargs):
-        self.raw_data = self.pulseviz_bands.values
+        converted_values = self.converted_values
+
+        converted_values = converted_values - converted_values.mean()
+
+        self.raw_data = np.array([
+            converted_values[:4].mean() * 0.75,
+            converted_values[4:8].mean() * 2,
+            converted_values[9:13].mean(),
+            converted_values[13:-6].mean() * 0.33,
+            converted_values[-6:].mean() * 0.2,
+            ]).mean(axis=0) * 12
 
     def device_processing(self, device, device_instance):
-        values = self.raw_data
-
-        movement = np.sum([
-            self.data_conversion(value, values.min(), values.max()) * self.acceleration_weight[index]
-            for index, value in enumerate(values)
-        ])
-
+        movement = self.raw_data
         if movement > 0:
             self.rainbow_offset += movement
 

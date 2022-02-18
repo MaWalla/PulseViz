@@ -1,3 +1,5 @@
+import numpy as np
+
 from immersivefx import Core
 from .bands import Bands, calculate_octave_bands
 from .pacmd import list_sources
@@ -66,7 +68,16 @@ class PulseViz(Core):
     def stop_bands(self):
         self.pulseviz_bands.stop()
 
-    @staticmethod
-    def data_conversion(value, minimum, maximum):
-        multiplicator = (value - minimum) / (maximum - minimum)
-        return multiplicator * multiplicator * multiplicator
+    @property
+    def converted_values(self):
+        """
+        takes the raw pulseviz data and puts all bands weight on a scale from 0.0 to 1.0
+        """
+        # I intentionally reassign with np.array() so that the variable can't change while the loop cycle runs
+        values = np.array(self.pulseviz_bands.values)
+
+        return np.array([
+            (value - values.min()) / (values.max() - values.min())
+            if not np.isinf(value) else 0
+            for value in values
+        ])
