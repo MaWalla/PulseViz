@@ -8,7 +8,7 @@ from .pacmd import list_sources
 class PulseViz(Core):
     name = 'PulseViz'
 
-    target_versions = ['1.1']
+    target_versions = ['1.2']
     target_platforms = ['linux']
 
     def __init__(self, *args, **kwargs):
