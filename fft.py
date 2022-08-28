@@ -99,8 +99,13 @@ class FFT(Sampler):
             # vector.
             # Thank you my hero: https://dsp.stackexchange.com/a/32080
             # TODO: This can be pre-calculated!
-            self._fft_values[:] = numpy.power(self._fft_values * 2.0, 2) \
-                / numpy.power(self._window_function_sum * self._reference_value, 2)
+
+            # Cheap Bandaid to keep this function from raising exceptions when things are fine the rest of the time
+            try:
+                self._fft_values[:] = numpy.power(self._fft_values * 2.0, 2) \
+                    / numpy.power(self._window_function_sum * self._reference_value, 2)
+            except FloatingPointError:
+                self._fft_values[:] = numpy.zeros(4097)
         else:
             raise Exception('This should not happen.')
 
