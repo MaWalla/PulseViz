@@ -68,6 +68,10 @@ class PulseViz(Core):
     def stop_bands(self):
         self.pulseviz_bands.stop()
 
+    def kill(self):
+        self.stop_bands()
+        super().kill()
+
     @property
     def converted_values(self):
         """
